@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>P1024题解
+ - BW Blog</title>
+        <meta charset="UTF-8"/>
+        <link rel="stylesheet" href="/static/default.css"/>
+        <link rel="stylesheet" href="/static/Bootstrap4.3.1/bootstrap.min.css"/>
+        <script src="/static/Bootstrap4.3.1/jquery.min.js"></script>
+        <script src="/static/Bootstrap4.3.1/popper.min.js"></script>
+        <script src="/static/Bootstrap4.3.1/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="/static/Katex/katex.min.css">
+        <script defer src="/static/Katex/katex.min.js"></script>
+        <script defer>
+            var katex_config = {
+                delimiters: 
+                [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ]
+            };
+        </script>
+        <script defer src="/static/Katex/auto-render.min.js" onload="renderMathInElement(document.getElementsByClassName('container')[0],katex_config)"></script>
+        <link rel="stylesheet" href="/static/code.css">
+    </head>
+    <body>
+        <div id="banner" style='background-image: url("/static/images/bg.png");'>
+            <div style="color: #FFFFFF;"><h1 style="font-size: 5em;">P1024题解
+</h1></div>
+        </div>
+        <div class="container" style="margin-top: 55px;margin-bottom: 85px;">
+            <nav>
+                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/pages/">主目录</a></li><li class="breadcrumb-item"><a href="/pages/solutions/">洛谷题解</a></li><li class="breadcrumb-item active">P1024</li></ol>
+            </nav>
+            <h3 id="_1">思路：贪心</h3>
+<ol>
+<li>要使疾病开始传播之前已经得病的奶牛数量最少，就是使传播距离 $R$ 尽可能大。</li>
+<li>考虑对于一个已经感染的牛，如果它前（后）的牛没有被感染，则说明它与那一头牛的距离大于等于感染距离 $R$。通过此法可以求出最大的 $R$。</li>
+<li>如果患病牛与前一头患病牛距离小于 $R$，则认为这一头牛是被前一头牛传染的，否则它就是传染源。这里要注意 $ans$ 被提前初始化为 $1$，因为第一个传染源不会计入 $ans$，要被特殊考虑。</li>
+</ol>
+<p>AC 代码（慎看，指针巨多）：</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="cpf">&lt;algorithm&gt;</span>
+<span class="cp">#define MAXN 1000</span>
+<span class="k">using</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Cow</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">place</span><span class="p">;</span><span class="c1">//牛的位置</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">status</span><span class="p">;</span><span class="c1">//牛的患病状态</span>
+<span class="p">}</span><span class="w"> </span><span class="n">cows</span><span class="p">[</span><span class="n">MAXN</span><span class="p">];</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">cmp</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">Cow</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="k">struct</span><span class="w"> </span><span class="nc">Cow</span><span class="w"> </span><span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">place</span><span class="o">&lt;</span><span class="n">b</span><span class="p">.</span><span class="n">place</span><span class="p">;</span><span class="c1">//从小到大以位置排序</span>
+<span class="p">}</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">min</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">a</span><span class="o">&lt;</span><span class="n">b</span><span class="o">?</span><span class="n">a</span><span class="o">:</span><span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">ans</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">Cow</span><span class="w"> </span><span class="o">*</span><span class="n">cp</span><span class="p">;</span><span class="c1">//别怕，这是循环变量。</span>
+<span class="w">    </span><span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">n</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">cp</span><span class="o">=</span><span class="n">cows</span><span class="p">;</span><span class="n">cp</span><span class="o">&lt;</span><span class="n">cows</span><span class="o">+</span><span class="n">n</span><span class="p">;</span><span class="o">++</span><span class="n">cp</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%d%d&quot;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">cp</span><span class="o">-&gt;</span><span class="n">place</span><span class="p">,</span><span class="o">&amp;</span><span class="n">cp</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">);</span><span class="c1">//不要理会那个箭头，就是普通输入。。。</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">sort</span><span class="p">(</span><span class="n">cows</span><span class="p">,</span><span class="n">cp</span><span class="p">,</span><span class="n">cmp</span><span class="p">);</span>
+<span class="w">    </span><span class="n">r</span><span class="o">=</span><span class="mf">1e9</span><span class="p">;</span><span class="c1">//将r设为极大值。</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">cp</span><span class="o">=</span><span class="n">cows</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="n">cp</span><span class="o">&lt;</span><span class="n">cows</span><span class="o">+</span><span class="n">n</span><span class="mi">-1</span><span class="p">;</span><span class="o">++</span><span class="n">cp</span><span class="p">)</span><span class="c1">//这里的+1-1是防止越界，可以证明排除边界不影响答案。</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">cp</span><span class="o">-&gt;</span><span class="n">status</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="c1">//如果这头牛没有患病……</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="p">((</span><span class="n">cp</span><span class="mi">-1</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">status</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="c1">//考虑前面的牛</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">r</span><span class="o">=</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">cp</span><span class="o">-&gt;</span><span class="n">place</span><span class="o">-</span><span class="p">(</span><span class="n">cp</span><span class="mi">-1</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">place</span><span class="p">);</span><span class="c1">//更新R</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="p">((</span><span class="n">cp</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">status</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="c1">//考虑后面的牛</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">r</span><span class="o">=</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">,(</span><span class="n">cp</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">place</span><span class="o">-</span><span class="n">cp</span><span class="o">-&gt;</span><span class="n">place</span><span class="p">);</span><span class="c1">//更新R</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">ans</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="c1">//初始化ans，包含第一个传染源。</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">cp</span><span class="o">=</span><span class="n">cows</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="n">cp</span><span class="o">&lt;</span><span class="n">cows</span><span class="o">+</span><span class="n">n</span><span class="p">;</span><span class="o">++</span><span class="n">cp</span><span class="p">)</span><span class="c1">//这里的+1也是防止越界。</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">cp</span><span class="o">-&gt;</span><span class="n">status</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="c1">//如果被感染……</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">cp</span><span class="o">-&gt;</span><span class="n">place</span><span class="o">-</span><span class="p">(</span><span class="n">cp</span><span class="mi">-1</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">place</span><span class="o">&lt;</span><span class="n">r</span><span class="p">)</span><span class="c1">//被上一头牛感染跳过</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">ans</span><span class="o">++</span><span class="p">;</span><span class="c1">//否则计入总数</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span><span class="n">ans</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+        </div>
+    </body>
+</html>
