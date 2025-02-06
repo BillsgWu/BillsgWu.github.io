@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>题解：P3032 [USACO11NOV] Binary Sudoku G
+ - BW Blog</title>
+        <meta charset="UTF-8"/>
+        <link rel="stylesheet" href="/static/default.css"/>
+        <link rel="stylesheet" href="/static/Bootstrap4.3.1/bootstrap.min.css"/>
+        <script src="/static/Bootstrap4.3.1/jquery.min.js"></script>
+        <script src="/static/Bootstrap4.3.1/popper.min.js"></script>
+        <script src="/static/Bootstrap4.3.1/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="/static/Katex/katex.min.css">
+        <script defer src="/static/Katex/katex.min.js"></script>
+        <script defer>
+            var katex_config = {
+                delimiters: 
+                [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ]
+            };
+        </script>
+        <script defer src="/static/Katex/auto-render.min.js" onload="renderMathInElement(document.getElementsByClassName('container')[0],katex_config)"></script>
+        <link rel="stylesheet" href="/static/code.css">
+    </head>
+    <body>
+        <div id="banner" style='background-image: url("/static/images/bg.png");'>
+            <div style="color: #FFFFFF;"><h1 style="font-size: 5em;">题解：P3032 [USACO11NOV] Binary Sudoku G
+</h1></div>
+        </div>
+        <div class="container" style="margin-top: 55px;margin-bottom: 85px;">
+            <nav>
+                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/pages/">主目录</a></li><li class="breadcrumb-item"><a href="/pages/solutions/">洛谷题解</a></li><li class="breadcrumb-item active">P3032</li></ol>
+            </nav>
+            <p>一看这道题，很容易联想起曾经学过的<a href="https://www.luogu.com.cn/problem/P1379">八数码</a>，明显是<strong>启发式迭代加深搜索</strong>（A*）算法。</p>
+<p>我们可以设置一个状态，就是对于每个 $3\times3$ 的格子，每一行，每一列都有一个状态位，暂时定为 <code>S</code>（不需要修改）和 <code>U</code>（需要修改），对应 $1$ 和 $0$。一共是 $9+9+9$ 个，这可以进行<strong>状态压缩</strong>。</p>
+<p>于是，这题的解法便出来了，是<strong>状态压缩迭代加深搜索</strong>。</p>
+<p>进行标记操作和查询，可以使用异或和与操作。</p>
+<div class="codehilite"><pre><span></span><code><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">mark</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oriStat</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">oriStat</span><span class="o">^=</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">((</span><span class="n">x</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="p">(</span><span class="n">y</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="mi">18</span><span class="p">);</span>
+<span class="w">    </span><span class="n">oriStat</span><span class="o">^=</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">9</span><span class="p">);</span>
+<span class="w">    </span><span class="n">oriStat</span><span class="o">^=</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">oriStat</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">hasU</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oriStat</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ans</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ans</span><span class="o">=</span><span class="n">ans</span><span class="o">||</span><span class="p">(</span><span class="o">~</span><span class="n">oriStat</span><span class="o">&amp;</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">((</span><span class="n">x</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="p">(</span><span class="n">y</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="mi">18</span><span class="p">)));</span>
+<span class="w">    </span><span class="n">ans</span><span class="o">=</span><span class="n">ans</span><span class="o">||</span><span class="p">(</span><span class="o">~</span><span class="n">oriStat</span><span class="o">&amp;</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">9</span><span class="p">)));</span>
+<span class="w">    </span><span class="n">ans</span><span class="o">=</span><span class="n">ans</span><span class="o">||</span><span class="p">(</span><span class="o">~</span><span class="n">oriStat</span><span class="o">&amp;</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">y</span><span class="p">)));</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ans</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>然后为了使 A* 发挥效力，估价函数采用统计 <code>U</code> 个数的方式。</p>
+<div class="codehilite"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oriStat</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">ans</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">j</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">hasU</span><span class="p">(</span><span class="n">oriStat</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">ans</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ans</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>A* 代码主程序</p>
+<div class="codehilite"><pre><span></span><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">dis</span><span class="p">;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">aStar</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oriStat</span><span class="p">,</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">aimStat</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">toStat</span><span class="p">;</span>
+<span class="w">    </span><span class="n">q</span><span class="p">.</span><span class="n">push</span><span class="p">({</span><span class="mi">0</span><span class="p">,</span><span class="n">oriStat</span><span class="p">});</span>
+<span class="w">    </span><span class="n">dis</span><span class="p">[</span><span class="n">oriStat</span><span class="p">]</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="o">!</span><span class="n">q</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">r</span><span class="o">=</span><span class="n">q</span><span class="p">.</span><span class="n">top</span><span class="p">();</span>
+<span class="w">        </span><span class="n">q</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+<span class="w">        </span><span class="n">dis</span><span class="p">[</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">].</span><span class="n">first</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="o">==</span><span class="n">aimStat</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">dis</span><span class="p">[</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">].</span><span class="n">second</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">toStat</span><span class="o">=</span><span class="n">mark</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">dis</span><span class="p">[</span><span class="n">toStat</span><span class="p">].</span><span class="n">first</span><span class="o">&amp;&amp;</span><span class="n">hasU</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">dis</span><span class="p">[</span><span class="n">toStat</span><span class="p">].</span><span class="n">second</span><span class="o">=</span><span class="n">min</span><span class="p">(</span><span class="n">dis</span><span class="p">[</span><span class="n">toStat</span><span class="p">].</span><span class="n">second</span><span class="p">,</span><span class="n">dis</span><span class="p">[</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">].</span><span class="n">second</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">q</span><span class="p">.</span><span class="n">push</span><span class="p">({</span><span class="n">dis</span><span class="p">[</span><span class="n">toStat</span><span class="p">].</span><span class="n">second</span><span class="o">+</span><span class="n">test</span><span class="p">(</span><span class="n">toStat</span><span class="p">),</span><span class="n">toStat</span><span class="p">});</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>AC 代码：</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="cpf">&lt;queue&gt;</span>
+<span class="cp">#include</span><span class="cpf">&lt;utility&gt;</span>
+<span class="cp">#include</span><span class="cpf">&lt;unordered_map&gt;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">priority_queue</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">greater</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">q</span><span class="p">;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">min</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">a</span><span class="o">&gt;</span><span class="n">b</span><span class="o">?</span><span class="n">a</span><span class="o">:</span><span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">mark</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oriStat</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">oriStat</span><span class="o">^=</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">((</span><span class="n">x</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="p">(</span><span class="n">y</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="mi">18</span><span class="p">);</span>
+<span class="w">    </span><span class="n">oriStat</span><span class="o">^=</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">9</span><span class="p">);</span>
+<span class="w">    </span><span class="n">oriStat</span><span class="o">^=</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">oriStat</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">hasU</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oriStat</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ans</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ans</span><span class="o">=</span><span class="n">ans</span><span class="o">||</span><span class="p">(</span><span class="o">~</span><span class="n">oriStat</span><span class="o">&amp;</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">((</span><span class="n">x</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="p">(</span><span class="n">y</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="mi">18</span><span class="p">)));</span>
+<span class="w">    </span><span class="n">ans</span><span class="o">=</span><span class="n">ans</span><span class="o">||</span><span class="p">(</span><span class="o">~</span><span class="n">oriStat</span><span class="o">&amp;</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">9</span><span class="p">)));</span>
+<span class="w">    </span><span class="n">ans</span><span class="o">=</span><span class="n">ans</span><span class="o">||</span><span class="p">(</span><span class="o">~</span><span class="n">oriStat</span><span class="o">&amp;</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">y</span><span class="p">)));</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ans</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oriStat</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">ans</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">j</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">hasU</span><span class="p">(</span><span class="n">oriStat</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">ans</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ans</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">dis</span><span class="p">;</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">aStar</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oriStat</span><span class="p">,</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">aimStat</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">toStat</span><span class="p">;</span>
+<span class="w">    </span><span class="n">q</span><span class="p">.</span><span class="n">push</span><span class="p">({</span><span class="mi">0</span><span class="p">,</span><span class="n">oriStat</span><span class="p">});</span>
+<span class="w">    </span><span class="n">dis</span><span class="p">[</span><span class="n">oriStat</span><span class="p">]</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">};</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="o">!</span><span class="n">q</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">r</span><span class="o">=</span><span class="n">q</span><span class="p">.</span><span class="n">top</span><span class="p">();</span>
+<span class="w">        </span><span class="n">q</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+<span class="w">        </span><span class="n">dis</span><span class="p">[</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">].</span><span class="n">first</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="o">==</span><span class="n">aimStat</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">dis</span><span class="p">[</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">].</span><span class="n">second</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">toStat</span><span class="o">=</span><span class="n">mark</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">dis</span><span class="p">[</span><span class="n">toStat</span><span class="p">].</span><span class="n">first</span><span class="o">&amp;&amp;</span><span class="n">hasU</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">dis</span><span class="p">[</span><span class="n">toStat</span><span class="p">].</span><span class="n">second</span><span class="o">=</span><span class="n">min</span><span class="p">(</span><span class="n">dis</span><span class="p">[</span><span class="n">toStat</span><span class="p">].</span><span class="n">second</span><span class="p">,</span><span class="n">dis</span><span class="p">[</span><span class="n">r</span><span class="p">.</span><span class="n">second</span><span class="p">].</span><span class="n">second</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">q</span><span class="p">.</span><span class="n">push</span><span class="p">({</span><span class="n">dis</span><span class="p">[</span><span class="n">toStat</span><span class="p">].</span><span class="n">second</span><span class="o">+</span><span class="n">test</span><span class="p">(</span><span class="n">toStat</span><span class="p">),</span><span class="n">toStat</span><span class="p">});</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">stat</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">27</span><span class="p">)</span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="mi">9</span><span class="p">;</span><span class="o">++</span><span class="n">j</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%1d&quot;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">r</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">stat</span><span class="o">=</span><span class="n">mark</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span><span class="n">aStar</span><span class="p">(</span><span class="n">stat</span><span class="p">,(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">27</span><span class="p">)</span><span class="mi">-1</span><span class="p">));</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+        </div>
+    </body>
+</html>

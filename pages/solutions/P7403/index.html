@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>题解：P7403 [BalticOI 2002] Tennis Club (Day1)
+ - BW Blog</title>
+        <meta charset="UTF-8"/>
+        <link rel="stylesheet" href="/static/default.css"/>
+        <link rel="stylesheet" href="/static/Bootstrap4.3.1/bootstrap.min.css"/>
+        <script src="/static/Bootstrap4.3.1/jquery.min.js"></script>
+        <script src="/static/Bootstrap4.3.1/popper.min.js"></script>
+        <script src="/static/Bootstrap4.3.1/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="/static/Katex/katex.min.css">
+        <script defer src="/static/Katex/katex.min.js"></script>
+        <script defer>
+            var katex_config = {
+                delimiters: 
+                [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ]
+            };
+        </script>
+        <script defer src="/static/Katex/auto-render.min.js" onload="renderMathInElement(document.getElementsByClassName('container')[0],katex_config)"></script>
+        <link rel="stylesheet" href="/static/code.css">
+    </head>
+    <body>
+        <div id="banner" style='background-image: url("/static/images/bg.png");'>
+            <div style="color: #FFFFFF;"><h1 style="font-size: 5em;">题解：P7403 [BalticOI 2002] Tennis Club (Day1)
+</h1></div>
+        </div>
+        <div class="container" style="margin-top: 55px;margin-bottom: 85px;">
+            <nav>
+                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/pages/">主目录</a></li><li class="breadcrumb-item"><a href="/pages/solutions/">洛谷题解</a></li><li class="breadcrumb-item active">P7403</li></ol>
+            </nav>
+            <h2 id="_1">思路</h2>
+<p>这是一道贪心算法，每一次挑想交朋友最多的那个人，优先与剩下想交朋友最多的人交朋友，如果能交的全交完了还不够，那么直接退出。</p>
+<p>做这道题时，我们需要先从大到小按交朋友的个数排序所有人，让 $G_1$ 与 $G_\text{2-N}$ 交朋友，如果这个人的要求达到了就匹配下一个，如果如果能交的全交完了还不够就直接结束程序</p>
+<p>例如：<code>2 3 1 2</code>，排序后变为：<code>3 2 2 1</code>，交完朋友后变为<code>0 1 1 0</code>，再次进行排序：<code>1 1 0 0</code>，最后变为：<code>0 0 0 0</code>，程序结束。</p>
+<p><a href="https://www.luogu.com.cn/record/117797462">AC</a>代码如下：</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span><span class="cpf">&lt;cstdio&gt;</span><span class="c1">               //标准配置不多说</span>
+<span class="cp">#include</span><span class="cpf">&lt;algorithm&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">point</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">index</span><span class="p">;</span><span class="w">                 </span><span class="c1">//记录是第几个人</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">num</span><span class="p">;</span><span class="w">                   </span><span class="c1">//想交的朋友数</span>
+<span class="p">};</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">cmp</span><span class="p">(</span><span class="n">point</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="n">point</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w">      </span><span class="c1">//学过std::sort都知道</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">num</span><span class="o">&gt;</span><span class="n">b</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">point</span><span class="w"> </span><span class="n">ls</span><span class="p">[</span><span class="mi">1000</span><span class="p">];</span><span class="w">                </span><span class="c1">//其实就是G数组</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">map</span><span class="p">[</span><span class="mi">1000</span><span class="p">][</span><span class="mi">1000</span><span class="p">];</span><span class="w">           </span><span class="c1">//map[i][0]记录有多少朋友，map[i][其他]为朋友编号</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">;</span>
+<span class="w">    </span><span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">n</span><span class="p">);</span><span class="w">            </span><span class="c1">//输入N</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">ls</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">num</span><span class="p">);</span><span class="c1">//输入Gi</span>
+<span class="w">        </span><span class="n">ls</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">index</span><span class="o">=</span><span class="n">i</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sort</span><span class="p">(</span><span class="n">ls</span><span class="p">,</span><span class="n">ls</span><span class="o">+</span><span class="n">n</span><span class="p">,</span><span class="n">cmp</span><span class="p">);</span><span class="w">     </span><span class="c1">//排序，现在的ls[0]代表想交朋友最多的那个人</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w">       </span><span class="c1">//与剩下想交朋友最多的人交朋友</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">ls</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">num</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w">   </span><span class="c1">//匹配完成</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span><span class="w">         </span><span class="c1">//匹配下一个人</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">ls</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">num</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w">   </span><span class="c1">//如果能交的全交完了还不够</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">goto</span><span class="w"> </span><span class="n">noans</span><span class="p">;</span><span class="w">    </span><span class="c1">//那么直接退出</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">ls</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">num</span><span class="o">--</span><span class="p">;</span><span class="w">       </span><span class="c1">//交朋友四行箴言</span>
+<span class="w">            </span><span class="n">ls</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">num</span><span class="o">--</span><span class="p">;</span>
+<span class="w">            </span><span class="n">map</span><span class="p">[</span><span class="n">ls</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">index</span><span class="p">][</span><span class="o">++</span><span class="n">map</span><span class="p">[</span><span class="n">ls</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">index</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span><span class="o">=</span><span class="n">ls</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">index</span><span class="p">;</span>
+<span class="w">            </span><span class="n">map</span><span class="p">[</span><span class="n">ls</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">index</span><span class="p">][</span><span class="o">++</span><span class="n">map</span><span class="p">[</span><span class="n">ls</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">index</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span><span class="o">=</span><span class="n">ls</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">index</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;SOLUTION</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w">      </span><span class="c1">//正常结束</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sort</span><span class="p">(</span><span class="n">map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">map</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;=</span><span class="n">map</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span><span class="o">++</span><span class="n">j</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d &quot;</span><span class="p">,</span><span class="n">map</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nl">end</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="nl">noans</span><span class="p">:</span><span class="w">                     </span><span class="c1">//无结果</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;NO SOLUTION&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">end</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>本题解与<a href="https://553o7g9239.oicp.vip/BillsgWu/P7403/">BW Blog</a>同步更新。</p>
+        </div>
+    </body>
+</html>

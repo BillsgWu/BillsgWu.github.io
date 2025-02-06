@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>题解：B3830 [NICA #2] 回溯的雨
+ - BW Blog</title>
+        <meta charset="UTF-8"/>
+        <link rel="stylesheet" href="/static/default.css"/>
+        <link rel="stylesheet" href="/static/Bootstrap4.3.1/bootstrap.min.css"/>
+        <script src="/static/Bootstrap4.3.1/jquery.min.js"></script>
+        <script src="/static/Bootstrap4.3.1/popper.min.js"></script>
+        <script src="/static/Bootstrap4.3.1/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="/static/Katex/katex.min.css">
+        <script defer src="/static/Katex/katex.min.js"></script>
+        <script defer>
+            var katex_config = {
+                delimiters: 
+                [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ]
+            };
+        </script>
+        <script defer src="/static/Katex/auto-render.min.js" onload="renderMathInElement(document.getElementsByClassName('container')[0],katex_config)"></script>
+        <link rel="stylesheet" href="/static/code.css">
+    </head>
+    <body>
+        <div id="banner" style='background-image: url("/static/images/bg.png");'>
+            <div style="color: #FFFFFF;"><h1 style="font-size: 5em;">题解：B3830 [NICA #2] 回溯的雨
+</h1></div>
+        </div>
+        <div class="container" style="margin-top: 55px;margin-bottom: 85px;">
+            <nav>
+                <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/pages/">主目录</a></li><li class="breadcrumb-item"><a href="/pages/solutions/">洛谷题解</a></li><li class="breadcrumb-item active">B3830</li></ol>
+            </nav>
+            <p><a href="https://www.luogu.com.cn/problem/B3830">传送门</a></p>
+<p>因为$a_ix+y=c_i$，$a_i$ 和 $y$ 都是正整数，$c_i$ 不可能小于等于 $x$，所以要保证有解每个 $c_i$ 都要 $\gt x$。</p>
+<p>根据同余定理 $a \equiv b \pmod x$，$(a  - b) \bmod x = 0$可知， $x$ 整除任意两项之差，可进一步证明任意一项与第一项的差除以 $x$ 为整数即可，过程省略。</p>
+<p>要使 $y$最大，答案就是$\min c-x$。</p>
+<p>~~不会有人看到 $10^{18}$ 还不开long long吧。~~</p>
+<p>那么，正解就出来了<a href="https://www.luogu.com.cn/record/122804003">AC</a>。</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">#include</span><span class="cpf">&lt;cstdio&gt;</span><span class="c1">                      //标配</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">pre</span><span class="p">,</span><span class="n">min</span><span class="p">;</span><span class="w">            </span><span class="c1">//r为输入临时变量，pre为第一项，min为答案</span>
+<span class="w">    </span><span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%d%lld%lld&quot;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">n</span><span class="p">,</span><span class="o">&amp;</span><span class="n">x</span><span class="p">,</span><span class="o">&amp;</span><span class="n">pre</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">pre</span><span class="o">&lt;</span><span class="n">x</span><span class="p">)</span><span class="w">                         </span><span class="c1">//无解</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">noans</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">min</span><span class="o">=</span><span class="n">pre</span><span class="o">-</span><span class="n">x</span><span class="p">;</span><span class="w">                        </span><span class="c1">//pre合法，把答案设为第一项与x的差</span>
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%lld&quot;</span><span class="p">,</span><span class="o">&amp;</span><span class="n">r</span><span class="p">);</span><span class="w">             </span><span class="c1">//输入</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">pre</span><span class="o">%</span><span class="n">x</span><span class="o">-</span><span class="n">r</span><span class="o">%</span><span class="n">x</span><span class="o">==</span><span class="mi">0</span><span class="o">&amp;&amp;</span><span class="n">r</span><span class="o">&gt;</span><span class="n">x</span><span class="p">)</span><span class="w">        </span><span class="c1">//测试是否合法</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="p">(</span><span class="n">min</span><span class="o">&gt;</span><span class="n">r</span><span class="o">-</span><span class="n">x</span><span class="p">)</span><span class="w">               </span><span class="c1">//更新答案</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">min</span><span class="o">=</span><span class="n">r</span><span class="o">-</span><span class="n">x</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w">                          </span><span class="c1">//无解</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">noans</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%lld&quot;</span><span class="p">,</span><span class="n">min</span><span class="p">);</span><span class="w">               </span><span class="c1">//输出</span>
+<span class="w">    </span><span class="nl">end</span><span class="p">:</span><span class="w">                              </span><span class="c1">//正常退出传送门</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="nl">noans</span><span class="p">:</span><span class="w">                            </span><span class="c1">//无解传送门</span>
+<span class="w">        </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;-1&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">end</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+        </div>
+    </body>
+</html>
